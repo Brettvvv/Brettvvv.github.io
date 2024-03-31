@@ -20,33 +20,11 @@
     
     
     <entry>
-      <title>categories</title>
-      <link href="/categories/index.html"/>
-      <url>/categories/index.html</url>
-      
-        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>]]></content>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>关于</title>
       <link href="/about/index.html"/>
       <url>/about/index.html</url>
       
         <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><!-- GitCalender容器 --><div id="gitZone"></div>]]></content>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title></title>
-      <link href="/css/custom.css"/>
-      <url>/css/custom.css</url>
-      
-        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>/*页脚页头图透明*/#footer {    background: transparent !important;}#page-header {    background: transparent !important;}/*白天模式遮罩透明*/#footer::before{    background: transparent !important;}#page-header::before{    background: transparent !important;}/*夜间模式遮罩透明*/[data-theme="dark"] #footer::before{    background: transparent !important;}[data-theme="dark"] #page-header::before{    background: transparent !important;}#pagination {    width: 100%;    margin: auto;}/* 一级菜单居中 */#nav .menus_items {    /* 这个带不带都可以，本来就是inline */    /*display: inline;*/    position: absolute !important;    width: max-content !important;    left: 50% !important;    transform: translateX(-50%) !important;}#nav .menus_items .menus_item {    padding: 0 0 0 8px !important;}/* 子菜单横向展示 */#nav .menus_items .menus_item:hover .menus_item_child {    display: flex !important;}/* 这里的2是代表导航栏的第二个元素，即有子菜单的元素，可以按自己需求修改 */.menus_items .menus_item:nth-child(2) .menus_item_child {    left: -95px;}.menus_items .menus_item:nth-child(3) .menus_item_child {    left: -103px;}.menus_items .menus_item:nth-child(4) .menus_item_child {    left: -102px;}.menus_items .menus_item:nth-child(5) .menus_item_child {    left: -38px;}.menus_items .menus_item:nth-child(6) .menus_item_child {    left: -133px;}.menus_items .menus_item:nth-child(7) .menus_item_child {    left: -105px;}/* 滚动显示的标题居中 */center#name-container {    position: absolute !important;    width: fit-content !important;    left: 42% !important;    /* transform: translateX(-50%) !important; */    /* transform: translateY(-100%) !important; */}@media screen and (max-width: 768px) {    center#name-container {        display: none;    }}/* 导航栏颜色 */#page-header.nav-fixed #nav {    background: linear-gradient(60deg, #ffd7e4 0, #c8f1ff 93%);    opacity: 0.95;    backdrop-filter: var(--backdrop-filter);}[data-theme="dark"] #page-header.nav-fixed #nav {    background: rgba(0, 0, 0, 0.95) !important;}/* 夜间模式菜单栏发光字 0 0 1px var(--theme-color) */[data-theme="light"] .menu_word {    text-shadow: none !important;}[data-theme="dark"] .menu_word {    text-shadow: var(--menu-shadow);}/* 手机端适配 */[data-theme="dark"] #sidebar #sidebar-menus .menus_items .site-page {    text-shadow: 0 0 2px var(--theme-color) !important;}#universe{    display: block;    position: fixed;    margin: 0;    padding: 0;    border: 0;    outline: 0;    left: 0;    top: 0;    width: 100%;    height: 100%;    pointer-events: none;    z-index: -1;}]]></content>
       
     </entry>
     
@@ -65,6 +43,28 @@
     
     <entry>
       <title></title>
+      <link href="/css/custom.css"/>
+      <url>/css/custom.css</url>
+      
+        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>/*页脚页头图透明*/#footer {    background: transparent !important;}#page-header {    background: transparent !important;}/*白天模式遮罩透明*/#footer::before{    background: transparent !important;}#page-header::before{    background: transparent !important;}/*夜间模式遮罩透明*/[data-theme="dark"] #footer::before{    background: transparent !important;}[data-theme="dark"] #page-header::before{    background: transparent !important;}#pagination {    width: 100%;    margin: auto;}/* 一级菜单居中 */#nav .menus_items {    /* 这个带不带都可以，本来就是inline */    /*display: inline;*/    position: absolute !important;    width: max-content !important;    left: 50% !important;    transform: translateX(-50%) !important;}#nav .menus_items .menus_item {    padding: 0 0 0 8px !important;}/* 子菜单横向展示 */#nav .menus_items .menus_item:hover .menus_item_child {    display: flex !important;}/* 这里的2是代表导航栏的第二个元素，即有子菜单的元素，可以按自己需求修改 */.menus_items .menus_item:nth-child(2) .menus_item_child {    left: -95px;}.menus_items .menus_item:nth-child(3) .menus_item_child {    left: -103px;}.menus_items .menus_item:nth-child(4) .menus_item_child {    left: -102px;}.menus_items .menus_item:nth-child(5) .menus_item_child {    left: -38px;}.menus_items .menus_item:nth-child(6) .menus_item_child {    left: -133px;}.menus_items .menus_item:nth-child(7) .menus_item_child {    left: -105px;}/* 滚动显示的标题居中 */center#name-container {    position: absolute !important;    width: fit-content !important;    left: 42% !important;    /* transform: translateX(-50%) !important; */    /* transform: translateY(-100%) !important; */}@media screen and (max-width: 768px) {    center#name-container {        display: none;    }}/* 导航栏颜色 */#page-header.nav-fixed #nav {    background: linear-gradient(60deg, #ffd7e4 0, #c8f1ff 93%);    opacity: 0.95;    backdrop-filter: var(--backdrop-filter);}[data-theme="dark"] #page-header.nav-fixed #nav {    background: rgba(0, 0, 0, 0.95) !important;}/* 夜间模式菜单栏发光字 0 0 1px var(--theme-color) */[data-theme="light"] .menu_word {    text-shadow: none !important;}[data-theme="dark"] .menu_word {    text-shadow: var(--menu-shadow);}/* 手机端适配 */[data-theme="dark"] #sidebar #sidebar-menus .menus_items .site-page {    text-shadow: 0 0 2px var(--theme-color) !important;}#universe{    display: block;    position: fixed;    margin: 0;    padding: 0;    border: 0;    outline: 0;    left: 0;    top: 0;    width: 100%;    height: 100%;    pointer-events: none;    z-index: -1;}]]></content>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title></title>
+      <link href="/js/light.js"/>
+      <url>/js/light.js</url>
+      
+        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>]]></content>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title></title>
       <link href="/css/runtime.css"/>
       <url>/css/runtime.css</url>
       
@@ -75,9 +75,9 @@
     
     
     <entry>
-      <title></title>
-      <link href="/js/light.js"/>
-      <url>/js/light.js</url>
+      <title>categories</title>
+      <link href="/categories/index.html"/>
+      <url>/categories/index.html</url>
       
         <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>]]></content>
       
@@ -97,22 +97,22 @@
     
     
     <entry>
-      <title>link</title>
-      <link href="/link/index.html"/>
-      <url>/link/index.html</url>
+      <title></title>
+      <link href="/js/universe.js"/>
+      <url>/js/universe.js</url>
       
-        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>]]></content>
+        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>function dark() {    window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;    var n, e, i, h, t = .05,        s = document.getElementById("universe"),        o = !0,        a = "180,184,240",        r = "226,225,142",        d = "226,225,224",        c = [];    function f() {        n = window.innerWidth, e = window.innerHeight, i = .216 * n, s.setAttribute("width", n), s.setAttribute("height", e)    }    function u() {        h.clearRect(0, 0, n, e);        for (var t = c.length, i = 0; i < t; i++) {            var s = c[i];            s.move(), s.fadeIn(), s.fadeOut(), s.draw()        }    }    function y() {        this.reset = function () {            this.giant = m(3), this.comet = !this.giant && !o && m(10), this.x = l(0, n - 10), this.y = l(0, e), this.r = l(1.1, 2.6), this.dx = l(t, 6 * t) + (this.comet + 1 - 1) * t * l(50, 120) + 2 * t, this.dy = -l(t, 6 * t) - (this.comet + 1 - 1) * t * l(50, 120), this.fadingOut = null, this.fadingIn = !0, this.opacity = 0, this.opacityTresh = l(.2, 1 - .4 * (this.comet + 1 - 1)), this.do = l(5e-4, .002) + .001 * (this.comet + 1 - 1)        }, this.fadeIn = function () {            this.fadingIn && (this.fadingIn = !(this.opacity > this.opacityTresh), this.opacity += this.do)        }, this.fadeOut = function () {            this.fadingOut && (this.fadingOut = !(this.opacity < 0), this.opacity -= this.do / 2, (this.x > n || this.y < 0) && (this.fadingOut = !1, this.reset()))        }, this.draw = function () {            if (h.beginPath(), this.giant) h.fillStyle = "rgba(" + a + "," + this.opacity + ")", h.arc(this.x, this.y, 2, 0, 2 * Math.PI, !1); else if (this.comet) {                h.fillStyle = "rgba(" + d + "," + this.opacity + ")", h.arc(this.x, this.y, 1.5, 0, 2 * Math.PI, !1);                for (var t = 0; t < 30; t++) h.fillStyle = "rgba(" + d + "," + (this.opacity - this.opacity / 20 * t) + ")", h.rect(this.x - this.dx / 4 * t, this.y - this.dy / 4 * t - 2, 2, 2), h.fill()            } else h.fillStyle = "rgba(" + r + "," + this.opacity + ")", h.rect(this.x, this.y, this.r, this.r);            h.closePath(), h.fill()        }, this.move = function () {            this.x += this.dx, this.y += this.dy, !1 === this.fadingOut && this.reset(), (this.x > n - n / 4 || this.y < 0) && (this.fadingOut = !0)        }, setTimeout(function () {            o = !1        }, 50)    }    function m(t) {        return Math.floor(1e3 * Math.random()) + 1 < 10 * t    }    function l(t, i) {        return Math.random() * (i - t) + t    }    f(), window.addEventListener("resize", f, !1), function () {        h = s.getContext("2d");        for (var t = 0; t < i; t++) c[t] = new y, c[t].reset();        u()    }(), function t() {        document.getElementsByTagName('html')[0].getAttribute('data-theme') == 'dark' && u(), window.requestAnimationFrame(t)    }()};dark()]]></content>
       
     </entry>
     
     
     
     <entry>
-      <title></title>
-      <link href="/js/universe.js"/>
-      <url>/js/universe.js</url>
+      <title>tags</title>
+      <link href="/tags/index.html"/>
+      <url>/tags/index.html</url>
       
-        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>function dark() {    window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;    var n, e, i, h, t = .05,        s = document.getElementById("universe"),        o = !0,        a = "180,184,240",        r = "226,225,142",        d = "226,225,224",        c = [];    function f() {        n = window.innerWidth, e = window.innerHeight, i = .216 * n, s.setAttribute("width", n), s.setAttribute("height", e)    }    function u() {        h.clearRect(0, 0, n, e);        for (var t = c.length, i = 0; i < t; i++) {            var s = c[i];            s.move(), s.fadeIn(), s.fadeOut(), s.draw()        }    }    function y() {        this.reset = function () {            this.giant = m(3), this.comet = !this.giant && !o && m(10), this.x = l(0, n - 10), this.y = l(0, e), this.r = l(1.1, 2.6), this.dx = l(t, 6 * t) + (this.comet + 1 - 1) * t * l(50, 120) + 2 * t, this.dy = -l(t, 6 * t) - (this.comet + 1 - 1) * t * l(50, 120), this.fadingOut = null, this.fadingIn = !0, this.opacity = 0, this.opacityTresh = l(.2, 1 - .4 * (this.comet + 1 - 1)), this.do = l(5e-4, .002) + .001 * (this.comet + 1 - 1)        }, this.fadeIn = function () {            this.fadingIn && (this.fadingIn = !(this.opacity > this.opacityTresh), this.opacity += this.do)        }, this.fadeOut = function () {            this.fadingOut && (this.fadingOut = !(this.opacity < 0), this.opacity -= this.do / 2, (this.x > n || this.y < 0) && (this.fadingOut = !1, this.reset()))        }, this.draw = function () {            if (h.beginPath(), this.giant) h.fillStyle = "rgba(" + a + "," + this.opacity + ")", h.arc(this.x, this.y, 2, 0, 2 * Math.PI, !1); else if (this.comet) {                h.fillStyle = "rgba(" + d + "," + this.opacity + ")", h.arc(this.x, this.y, 1.5, 0, 2 * Math.PI, !1);                for (var t = 0; t < 30; t++) h.fillStyle = "rgba(" + d + "," + (this.opacity - this.opacity / 20 * t) + ")", h.rect(this.x - this.dx / 4 * t, this.y - this.dy / 4 * t - 2, 2, 2), h.fill()            } else h.fillStyle = "rgba(" + r + "," + this.opacity + ")", h.rect(this.x, this.y, this.r, this.r);            h.closePath(), h.fill()        }, this.move = function () {            this.x += this.dx, this.y += this.dy, !1 === this.fadingOut && this.reset(), (this.x > n - n / 4 || this.y < 0) && (this.fadingOut = !0)        }, setTimeout(function () {            o = !1        }, 50)    }    function m(t) {        return Math.floor(1e3 * Math.random()) + 1 < 10 * t    }    function l(t, i) {        return Math.random() * (i - t) + t    }    f(), window.addEventListener("resize", f, !1), function () {        h = s.getContext("2d");        for (var t = 0; t < i; t++) c[t] = new y, c[t].reset();        u()    }(), function t() {        document.getElementsByTagName('html')[0].getAttribute('data-theme') == 'dark' && u(), window.requestAnimationFrame(t)    }()};dark()]]></content>
+        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>]]></content>
       
     </entry>
     
@@ -130,9 +130,9 @@
     
     
     <entry>
-      <title>tags</title>
-      <link href="/tags/index.html"/>
-      <url>/tags/index.html</url>
+      <title>link</title>
+      <link href="/link/index.html"/>
+      <url>/link/index.html</url>
       
         <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>]]></content>
       
