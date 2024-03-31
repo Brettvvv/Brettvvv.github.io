@@ -1,4 +1,4 @@
-var now = new Date();
+<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>var now = new Date();
 function createtime() {
     var grt = new Date("03/29/2024 00:00:00");
     now.setTime(now.getTime() + 250);

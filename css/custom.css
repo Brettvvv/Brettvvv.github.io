@@ -1,4 +1,4 @@
-/*页脚页头图透明*/
+<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>/*页脚页头图透明*/
 #footer {
     background: transparent !important;
 }
@@ -20,4 +20,96 @@
 }
 [data-theme="dark"] #page-header::before{
     background: transparent !important;
+}
+
+#pagination {
+    width: 100%;
+    margin: auto;
+}
+
+/* 一级菜单居中 */
+#nav .menus_items {
+    /* 这个带不带都可以，本来就是inline */
+    /*display: inline;*/
+    position: absolute !important;
+    width: max-content !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+}
+#nav .menus_items .menus_item {
+    padding: 0 0 0 8px !important;
+}
+/* 子菜单横向展示 */
+#nav .menus_items .menus_item:hover .menus_item_child {
+    display: flex !important;
+}
+/* 这里的2是代表导航栏的第二个元素，即有子菜单的元素，可以按自己需求修改 */
+.menus_items .menus_item:nth-child(2) .menus_item_child {
+    left: -95px;
+}
+.menus_items .menus_item:nth-child(3) .menus_item_child {
+    left: -103px;
+}
+.menus_items .menus_item:nth-child(4) .menus_item_child {
+    left: -102px;
+}
+.menus_items .menus_item:nth-child(5) .menus_item_child {
+    left: -38px;
+}
+.menus_items .menus_item:nth-child(6) .menus_item_child {
+    left: -133px;
+}
+.menus_items .menus_item:nth-child(7) .menus_item_child {
+    left: -105px;
+}
+/* 滚动显示的标题居中 */
+center#name-container {
+    position: absolute !important;
+    width: fit-content !important;
+    left: 42% !important;
+    /* transform: translateX(-50%) !important; */
+    /* transform: translateY(-100%) !important; */
+}
+@media screen and (max-width: 768px) {
+    center#name-container {
+        display: none;
+    }
+}
+
+/* 导航栏颜色 */
+#page-header.nav-fixed #nav {
+    background: linear-gradient(60deg, #ffd7e4 0, #c8f1ff 93%);
+    opacity: 0.95;
+    backdrop-filter: var(--backdrop-filter);
+}
+[data-theme="dark"] #page-header.nav-fixed #nav {
+    background: rgba(0, 0, 0, 0.95) !important;
+}
+
+/* 夜间模式菜单栏发光字 0 0 1px var(--theme-color) */
+[data-theme="light"] .menu_word {
+    text-shadow: none !important;
+}
+[data-theme="dark"] .menu_word {
+    text-shadow: var(--menu-shadow);
+}
+
+/* 手机端适配 */
+[data-theme="dark"] #sidebar #sidebar-menus .menus_items .site-page {
+    text-shadow: 0 0 2px var(--theme-color) !important;
+}
+
+#universe{
+    display: block;
+    position: fixed;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
 }
