@@ -1,12 +1,7 @@
 <link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>function dark() {
     window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-    var n, e, i, h, t = .05,
-        s = document.getElementById("universe"),
-        o = !0,
-        a = "180,184,240",
-        r = "226,225,142",
-        d = "226,225,224",
-        c = [];
+    var n, e, i, h, t = .05, s = document.getElementById("universe"), o = !0, a = "180,184,240", r = "226,225,142",
+        d = "226,225,224", c = [];
 
     function f() {
         n = window.innerWidth, e = window.innerHeight, i = .216 * n, s.setAttribute("width", n), s.setAttribute("height", e)
