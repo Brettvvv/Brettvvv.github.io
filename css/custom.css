@@ -468,7 +468,7 @@ div#category {
 
 /* 手机端适配 */
 [data-theme="dark"] #sidebar #sidebar-menus .menus_items .site-page {
-    text-shadow: 0 0 2px var(--theme-color) !important;
+    text-shadow: 0 0 2px rgb(68, 235, 224) !important;
 }
 
 /* 闪烁变动颜色连续渐变 */
