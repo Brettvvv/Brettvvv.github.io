@@ -136,17 +136,17 @@ svg.icon {
 
 /* bilibli番剧插件 */
 #article-container .bangumi-tab.bangumi-active {
-    background: var(--anzhiyu-theme);
-    color: var(--anzhiyu-ahoverbg);
+    background: rgb(57, 197, 187);
+    color: rgb(57, 197, 187);
     border-radius: 10px;
 }
 a.bangumi-tab:hover {
     text-decoration: none !important;
 }
 .bangumi-button:hover {
-    background: var(--anzhiyu-theme) !important;
+    background: rgb(57, 197, 187) !important;
     border-radius: 10px !important;
-    color: var(--anzhiyu-ahoverbg) !important;
+    color: rgb(57, 197, 187) !important;
 }
 a.bangumi-button.bangumi-nextpage:hover {
     text-decoration: none !important;
@@ -428,7 +428,7 @@ div#category {
     overflow: hidden;
     width: 230px;
     height: 143px;
-    background: var(--anzhiyu-card-bg);
+    background: url(https://img2.imgtp.com/2024/04/02/xRcxzh4T.JPG);
     display: flex;
 }
 
@@ -931,7 +931,7 @@ svg.social_icon {
 /* 链接悬浮颜色 */
 .ft-links li a:hover {
     text-decoration: none !important;
-    color: var(--theme-color) !important;
+    color: rgb(57, 197, 187) !important;
 }
 
 .ft-item-2 .ft-img-group {
@@ -969,7 +969,7 @@ svg.social_icon {
 }
 /* 头像悬浮颜色框 */
 .ft-item-2 .ft-img-group .img-group-item a img:hover {
-    border: 2px solid var(--theme-color);
+    border: 2px solid rgb(57, 197, 187);
 }
 
 @media screen and (max-width: 768px) {
