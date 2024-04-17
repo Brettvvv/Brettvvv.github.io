@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>让坦克开起来</title>
+    <style type="text/css">
+        input {
+            font-size: 26px;
+            margin-top: 20px;
+        }
+
+        body {
+            background-image: url(HW05/grassland.png);
+            margin: 0;
+        }
+
+        #my_tank {
+            z-index: -1;
+            position: absolute;
+            left: 10px;
+            top: 100px;
+            transition: transform 0.5s; /* 添加过渡效果 */
+        }
+
+        .bullet {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+<img id="my_tank" src="HW05/right.png" alt=""/>
+<script>
+    removeTank();
+    // 默认坦克方向
+    let tankDirection = "right";
+    // 坦克移动函数
+    function removeTank() {
+        // 获取坦克元素
+        let my_tank = document.getElementById("my_tank");
+
+        // 监听键盘事件
+        window.addEventListener("keydown", (e) => {
+            // 获取left
+            let left = parseFloat(getComputedStyle(my_tank).left);
+            // 获取top
+            let top = parseFloat(getComputedStyle(my_tank).top);
+            switch (e.key) {
+                // 按下 'a' 键，向左移动
+                case 'a':
+                    tankDirection = "left";
+                    my_tank.style.transform = 'rotate(180deg)'; // 逆时针旋转180度
+                    // 不能超出屏幕
+                    if (left > 0) {
+                        my_tank.style.left = left - 5 + 'px'; // 减少 left 值以向左移动
+                    }
+                    break;
+                // 按下 'd' 键，向右移动
+                case 'd':
+                    tankDirection = "right";
+                    my_tank.style.transform = 'rotate(0deg)'; // 旋转角度为0
+                    // 不能超出屏幕
+                    if (left < 1460) {
+                        my_tank.style.left = left + 5 + 'px'; // 增加 left 值以向右移动
+                    }
+                    break;
+                // 按下 'w' 键，向上移动
+                case 'w':
+                    tankDirection = "up";
+                    my_tank.style.transform = 'rotate(-90deg)'; // 逆时针旋转90度
+                    // 不能超出屏幕
+                    if (top > 10) {
+                        my_tank.style.top = top - 5 + 'px'; // 减少 top 值以向上移动
+                    }
+                    break;
+                // 按下 's' 键，向下移动
+                case 's':
+                    tankDirection = "down";
+                    my_tank.style.transform = 'rotate(90deg)'; // 顺时针旋转90度
+                    // 不能超出屏幕
+                    if (top < 740) {
+                        my_tank.style.top = top + 5 + 'px'; // 增加 top 值以向下移动
+                    }
+                    break;
+                // 按下 ' ' 空格键，发射炮弹
+                case ' ':
+                    e.preventDefault();
+                    fireBullet(left, top, tankDirection);
+                    break;
+                // 默认情况下，提示只能使用方向键移动
+                // default:
+                //     alert('只能使用WASD移动，空格攻击！');
+            }
+        })
+    }
+    // 发射炮弹函数
+    function fireBullet(tankLeft, tankTop, direction) {
+        let bullet = document.createElement("div");
+        bullet.className = "bullet";
+        bullet.style.left = tankLeft + "px";
+        bullet.style.top = tankTop + "px";
+
+        // 根据坦克朝向设置炮弹的移动方向
+        switch (direction) {
+            case "left":
+                bullet.style.left = tankLeft - 10 + "px";
+                break;
+            case "right":
+                bullet.style.left = tankLeft + 40 + "px";
+                break;
+            case "up":
+                bullet.style.top = tankTop - 10 + "px";
+                break;
+            case "down":
+                bullet.style.top = tankTop + 40 + "px";
+                break;
+        }
+        document.body.appendChild(bullet);
+
+        // 设置炮弹的移动
+        let bulletMove = setInterval(() => {
+            let bulletTop = parseFloat(getComputedStyle(bullet).top);
+            let bulletLeft = parseFloat(getComputedStyle(bullet).left);
+            switch (direction) {
+                case "left":
+                    bullet.style.left = bulletLeft - 10 + "px";
+                    break;
+                case "right":
+                    bullet.style.left = bulletLeft + 10 + "px";
+                    break;
+                case "up":
+                    bullet.style.top = bulletTop - 10 + "px";
+                    break;
+                case "down":
+                    bullet.style.top = bulletTop + 10 + "px";
+                    break;
+            }
+
+            if (bulletTop <= 0 || bulletTop >= window.innerHeight || bulletLeft <= 0 || bulletLeft >= window.innerWidth) {
+                clearInterval(bulletMove);
+                document.body.removeChild(bullet);
+            }
+        }, 50);
+    }
+</script>
+</body>
+</html>
