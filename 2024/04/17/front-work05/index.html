@@ -50,7 +50,7 @@
                     my_tank.style.transform = 'rotate(180deg)'; // 逆时针旋转180度
                     // 不能超出屏幕
                     if (left > 0) {
-                        my_tank.style.left = left - 5 + 'px'; // 减少 left 值以向左移动
+                        my_tank.style.left = left - 10 + 'px'; // 减少 left 值以向左移动
                     }
                     break;
                 // 按下 'd' 键，向右移动
@@ -58,8 +58,8 @@
                     tankDirection = "right";
                     my_tank.style.transform = 'rotate(0deg)'; // 旋转角度为0
                     // 不能超出屏幕
-                    if (left < 1460) {
-                        my_tank.style.left = left + 5 + 'px'; // 增加 left 值以向右移动
+                    if (left < 1470) {
+                        my_tank.style.left = left + 10 + 'px'; // 增加 left 值以向右移动
                     }
                     break;
                 // 按下 'w' 键，向上移动
@@ -68,7 +68,7 @@
                     my_tank.style.transform = 'rotate(-90deg)'; // 逆时针旋转90度
                     // 不能超出屏幕
                     if (top > 10) {
-                        my_tank.style.top = top - 5 + 'px'; // 减少 top 值以向上移动
+                        my_tank.style.top = top - 10 + 'px'; // 减少 top 值以向上移动
                     }
                     break;
                 // 按下 's' 键，向下移动
@@ -77,7 +77,7 @@
                     my_tank.style.transform = 'rotate(90deg)'; // 顺时针旋转90度
                     // 不能超出屏幕
                     if (top < 740) {
-                        my_tank.style.top = top + 5 + 'px'; // 增加 top 值以向下移动
+                        my_tank.style.top = top + 10 + 'px'; // 增加 top 值以向下移动
                     }
                     break;
                 // 按下 ' ' 空格键，发射炮弹
