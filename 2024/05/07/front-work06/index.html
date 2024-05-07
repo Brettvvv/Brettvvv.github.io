@@ -1,0 +1,69 @@
+
+<meta charset="UTF-8">
+<title>练习4</title>
+<style type="text/css">
+        body {
+            font-size: 13px;
+            line-height: 25px;
+        }
+        table {
+            border-top: 1px solid #333;
+            border-left: 1px solid #333;
+            width: 300px;
+        }
+        td {
+            border-right: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+        .center {
+            text-align: center;
+        }
+    </style>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<body>
+<table border="0" cellspacing="0" cellpadding="0" id="myTable">
+    <tr id="row1">
+        <td>书名</td>
+        <td>价格</td>
+    </tr>
+    <tr id="row2">
+        <td>看得见风景的房间</td>
+        <td class="center">&yen;30.00</td>
+    </tr>
+    <tr id="row3">
+        <td>60个瞬间</td>
+        <td class="center">&yen;32.00</td>
+    </tr>
+</table>
+<input name="b1" type="button" value="增加一行" onclick="addRow()"/>
+<input name="b2" type="button" value="删除第2行" onclick="delRow()"/>
+<input name="b3" type="button" value="修改标题样式" onclick="updateRow()"/>
+<input name="b4" type="button" value="复制最后一行" onclick="copyRow()"/>
+<script>
+    function addRow() {
+        let newRow = $("<tr>");
+        let col1 = $("<td>").html("幸福从天而降");
+        let col2 = $("<td>").html("&yen;18.5").attr("align", "center");
+        newRow.append(col1, col2);
+        $("#myTable").append(newRow);
+    }
+
+    function updateRow() {
+        $("#row1").attr("style", "font-weight:bold;text-align:center;background-color: #cccccc;");
+    }
+
+    function delRow() {
+        let dRow = $("tr");
+        if (dRow[2] != null) {
+            dRow[2].remove(); //删除行
+        }
+    }
+
+    function copyRow() {
+        let oldRow = $("#myTable tr:last");
+        let newRow = oldRow.clone();
+        $("#myTable").append(newRow)
+    }
+</script>
+</body>
+
