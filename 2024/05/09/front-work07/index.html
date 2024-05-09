@@ -1,0 +1,28 @@
+
+<style>
+body, html {
+margin: 0;
+padding: 0;
+width: 100%;
+height: 100%;
+overflow: hidden;
+background-color: black;
+}
+#player {
+position: absolute;
+top: 0;
+left: 0;
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<body>
+<img id="player" src="img/1.GIF" alt="" style="width: 250px">
+<script>
+    $(document).ready(function(){
+        $(document).click(function(event){
+            $("#player").stop().animate({top: event.pageY, left: event.pageX}, 1000);
+        });
+    });
+</script>
+</body>
+
