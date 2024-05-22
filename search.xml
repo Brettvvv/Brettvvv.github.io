@@ -4,6 +4,33 @@
   
     
     <entry>
+      <title>个人随笔：消息中间件</title>
+      <link href="/2024/05/22/note-RabbitMQ1/"/>
+      <url>/2024/05/22/note-RabbitMQ1/</url>
+      
+        <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>微服务一旦拆分，必然涉及到服务之间的相互调用，目前我们服务之间调用采用的都是基于OpenFeign的调用。这种调用中，调用者发起请求后需要<strong>等待</strong>服务提供者执行业务返回结果后，才能继续执行后面的业务。也就是说调用者在调用过程中处于阻塞状态，因此我们成这种调用方式为<strong>同步调用</strong>，也可以叫<strong>同步通讯</strong>。但在很多场景下，我们可能需要采用<strong>异步通讯</strong>的方式，为什么呢？</p><p>我们先来看看什么是同步通讯和异步通讯。如图：<br><img src="https://img2.imgtp.com/2024/05/22/43BCRIgS.png"><br>解读：</p><ul><li><code>同步通讯</code>：就如同打视频电话，双方的交互都是实时的。因此同一时刻你只能跟一个人打视频电话。</li><li><code>异步通讯</code>：就如同发微信聊天，双方的交互不是实时的，你不需要立刻给对方回应。因此你可以多线操作，同时跟多人聊天。</li></ul><p>两种方式各有优劣，打电话可以立即得到响应，但是你却不能跟多个人同时通话。发微信可以同时与多个人收发微信，但是往往响应会有延迟。</p><p>所以，如果我们的业务需要实时得到服务提供方的响应，则应该选择同步通讯（同步调用）。而如果我们追求更高的效率，并且不需要实时响应，则应该选择异步通讯（异步调用）。</p><p>同步调用的方式我们已经学过了，之前的<code>OpenFeign</code>调用就是。但是：</p><ul><li>异步调用又该如何实现？</li><li>哪些业务适合用异步调用来实现呢？</li></ul><h1 id="1-初识MQ"><a href="#1-初识MQ" class="headerlink" title="1.初识MQ"></a>1.初识MQ</h1><h2 id="1-1-同步调用"><a href="#1-1-同步调用" class="headerlink" title="1.1.同步调用"></a>1.1.同步调用</h2><p>之前说过，我们现在基于<code>OpenFeign</code>的调用都属于是同步调用，那么这种方式存在哪些问题呢？<br>举个例子，我们以电商平台的 <strong>余额支付功能</strong> 为例来分析，首先看下整个流程：<br><img src="https://img2.imgtp.com/2024/05/22/qacBcOGa.jpeg" alt="1716340715289.jpeg"><br>目前我们采用的是基于<code>OpenFeign</code>的同步调用，也就是说业务执行流程是这样的</p><ul><li>支付服务需要先调用用户服务完成余额扣减</li><li>然后支付服务自己要更新支付流水单的状态</li><li>然后支付服务调用交易服务，更新业务订单状态为已支付</li></ul><p>三个步骤依次执行。<br>这其中就存在3个问题：</p><p><strong>第一</strong>，<strong>拓展性差</strong></p><p>我们目前的业务相对简单，但是随着业务规模扩大，产品的功能也在不断完善。</p><p>在大多数电商业务中，用户支付成功后都会以短信或者其它方式通知用户，告知支付成功。假如后期产品经理提出这样新的需求，你怎么办？是不是要在上述业务中再加入通知用户的业务？<br>某些电商项目中，还会有积分或金币的概念。假如产品经理提出需求，用户支付成功后，给用户以积分奖励或者返还金币，你怎么办？是不是要在上述业务中再加入积分业务、返还金币业务？</p><p>最终你的支付业务会越来越臃肿：<br><img src="https://img2.imgtp.com/2024/05/22/9DqAkncg.jpeg" alt="1716340862297.jpeg"><br>也就是说每次有新的需求，现有支付逻辑都要跟着变化，代码经常变动，不符合开闭原则，拓展性不好。</p><p><strong>第二</strong>，<strong>性能下降</strong></p><p>由于我们采用了同步调用，调用者需要等待服务提供者执行完返回结果后，才能继续向下执行，也就是说每次远程调用，调用者都是阻塞等待状态。最终整个业务的响应时长就是每次远程调用的执行时长之和：<br><img src="https://img2.imgtp.com/2024/05/22/gJzLET1Q.jpeg" alt="1716340892776.jpeg"><br>假如每个微服务的执行时长都是50ms，则最终整个业务的耗时可能高达300ms，性能太差了。</p><p><strong>第三</strong>，<strong>级联失败</strong></p><p>由于我们是基于OpenFeign调用交易服务、通知服务。当交易服务、通知服务出现故障时，整个事务都会回滚，交易失败。</p><p>这其实就是同步调用的<code>级联失败</code>问题。</p><p>但是大家思考一下，我们假设用户余额充足，扣款已经成功，此时我们应该确保支付流水单更新为已支付，确保交易成功。毕竟收到手里的钱没道理再退回去吧</p><p>因此，这里不能因为短信通知、更新订单状态失败而回滚整个事务。</p><p>综上，同步调用的方式存在下列问题：</p><ul><li><code>拓展性差</code></li><li><code>性能下降</code></li><li><code>级联失败</code></li></ul><p>而要解决这些问题，我们就必须用 <strong>异步调用</strong> 的方式来代替 <strong>同步调用</strong> 。</p><h2 id="1-2-异步调用"><a href="#1-2-异步调用" class="headerlink" title="1.2.异步调用"></a>1.2.异步调用</h2><p>异步调用方式其实就是基于消息通知的方式，一般包含三个角色：</p><ul><li><code>消息发送者</code>：投递消息的人，就是原来的调用方</li><li><code>消息Broker</code>：管理、暂存、转发消息，你可以把它理解成微信服务器</li><li><code>消息接收者</code>：接收和处理消息的人，就是原来的服务提供方</li></ul><p><img src="https://img2.imgtp.com/2024/05/22/FPTQQpdj.jpeg" alt="1716340954546.jpeg"><br>在异步调用中，发送者不再直接同步调用接收者的业务接口，而是发送一条消息投递给消息Broker。然后接收者根据自己的需求从消息Broker那里订阅消息。每当发送方发送消息后，接受者都能获取消息并处理。</p><p>这样，发送消息的人和接收消息的人就完全解耦了。</p><p>我们还是以余额支付业务为例：<br><img src="https://img2.imgtp.com/2024/05/22/QHkkuuAK.jpeg" alt="1716341019838.jpeg"><br>除了扣减余额、更新支付流水单状态以外，其它调用逻辑全部取消。而是改为发送一条消息到Broker。而相关的微服务都可以订阅消息通知，一旦消息到达Broker，则会分发给每一个订阅了的微服务，处理各自的业务。</p><p>假如产品经理提出了新的需求，比如要在支付成功后更新用户积分。支付代码完全不用变更，而仅仅是让积分服务也订阅消息即可：<br><img src="https://img2.imgtp.com/2024/05/22/Z3EijcXZ.jpeg" alt="1716341045676.jpeg"><br>不管后期增加了多少消息订阅者，作为支付服务来讲，执行问扣减余额、更新支付流水状态后，发送消息即可。业务耗时仅仅是这三部分业务耗时，仅仅100ms，大大提高了业务性能。</p><p>另外，不管是交易服务、通知服务，还是积分服务，他们的业务与支付关联度低。现在采用了异步调用，解除了耦合，他们即便执行过程中出现了故障，也不会影响到支付服务。</p><p>综上，异步调用的优势包括：</p><ul><li><code>耦合度更低</code></li><li><code>性能更好</code></li><li><code>业务拓展性强</code></li><li><code>故障隔离，避免级联失败</code></li></ul><p>当然，异步通信也并非完美无缺，它存在下列缺点：</p><ul><li><strong>完全依赖于Broker的可靠性、安全性和性能</strong></li><li><strong>架构复杂，后期维护和调试麻烦</strong></li></ul><h2 id="1-3-技术选型"><a href="#1-3-技术选型" class="headerlink" title="1.3.技术选型"></a>1.3.技术选型</h2><p>消息Broker，目前常见的实现方案就是<code>消息队列(MessageQueue)</code>，简称为MQ.<br>目比较常见的MQ实现：</p><ul><li><code>ActiveMQ</code></li><li><code>RabbitMQ</code></li><li><code>RocketMQ</code></li><li><code>Kafka</code></li></ul><p>几种常见MQ的对比：</p><table><thead><tr><th></th><th><strong>RabbitMQ</strong></th><th><strong>ActiveMQ</strong></th><th><strong>RocketMQ</strong></th><th><strong>Kafka</strong></th></tr></thead><tbody><tr><td>公司&#x2F;社区</td><td>Rabbit</td><td>Apache</td><td>阿里</td><td>Apache</td></tr><tr><td>开发语言</td><td>Erlang</td><td>Java</td><td>Java</td><td>Scala&amp;Java</td></tr><tr><td>协议支持</td><td>AMQP，XMPP，SMTP，STOMP</td><td>OpenWire,STOMP，REST,XMPP,AMQP</td><td>自定义协议</td><td>自定义协议</td></tr><tr><td>可用性</td><td>高</td><td>一般</td><td>高</td><td>高</td></tr><tr><td>单机吞吐量</td><td>一般</td><td>差</td><td>高</td><td>非常高</td></tr><tr><td>消息延迟</td><td>微秒级</td><td>毫秒级</td><td>毫秒级</td><td>毫秒以内</td></tr><tr><td>消息可靠性</td><td>高</td><td>一般</td><td>高</td><td>一般</td></tr></tbody></table><p>追求可用性：Kafka、 RocketMQ 、RabbitMQ<br>追求可靠性：RabbitMQ、RocketMQ<br>追求吞吐能力：RocketMQ、Kafka<br>追求消息低延迟：RabbitMQ、Kafka</p><p>据统计，目前国内消息队列使用最多的还是RabbitMQ，再加上其各方面都比较均衡，稳定性也好，因此我选择<code>RabbitMQ</code>来学习。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 个人笔记 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 消息中间件 </tag>
+            
+            <tag> RabbitMQ </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>前端实验五 ：用户注册验证的设计与实现</title>
       <link href="/2024/05/21/front-test05/"/>
       <url>/2024/05/21/front-test05/</url>
@@ -285,25 +312,6 @@
     
     
     <entry>
-      <title>我的笔记</title>
-      <link href="/2024/03/31/note-note01/"/>
-      <url>/2024/03/31/note-note01/</url>
-      
-        <content type="html"><![CDATA[<h1 id="我的笔记"><a href="#我的笔记" class="headerlink" title="我的笔记"></a>我的笔记</h1>]]></content>
-      
-      
-      <categories>
-          
-          <category> 个人笔记 </category>
-          
-      </categories>
-      
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>我的第一篇文章</title>
       <link href="/2024/03/29/java-Demo/"/>
       <url>/2024/03/29/java-Demo/</url>
@@ -351,6 +359,17 @@
     
     
     <entry>
+      <title>关于</title>
+      <link href="/about/index.html"/>
+      <url>/about/index.html</url>
+      
+        <content type="html"><![CDATA[<!-- GitCalender容器 --><div id="gitZone"></div>]]></content>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>categories</title>
       <link href="/categories/index.html"/>
       <url>/categories/index.html</url>
@@ -367,28 +386,6 @@
       <url>/css/center-radar.css</url>
       
         <content type="html"><![CDATA[.pace {-webkit-pointer-events: none;pointer-events: none;-webkit-user-select: none;-moz-user-select: none;user-select: none;z-index: 2000;position: fixed;height: 90px;width: 90px;margin: auto;top: 0;left: 0;right: 0;bottom: 0;}.pace.pace-inactive .pace-activity {display: none;}.pace .pace-activity {position: fixed;z-index: 2000;display: block;position: absolute;left: -30px;top: -30px;height: 90px;width: 90px;display: block;border-width: 30px;border-style: double;border-color: #29d transparent transparent;border-radius: 50%;-webkit-box-sizing: content-box;-moz-box-sizing: content-box;box-sizing: content-box;-webkit-animation: spin 1s linear infinite;-moz-animation: spin 1s linear infinite;-o-animation: spin 1s linear infinite;animation: spin 1s linear infinite;}.pace .pace-activity:before {content: ' ';position: absolute;top: 10px;left: 10px;height: 50px;width: 50px;display: block;border-width: 10px;border-style: solid;border-color: #29d transparent transparent;border-radius: 50%;-webkit-box-sizing: content-box;-moz-box-sizing: content-box;box-sizing: content-box;}@-webkit-keyframes spin {100% { -webkit-transform: rotate(359deg); }}@-moz-keyframes spin {100% { -moz-transform: rotate(359deg); }}@-o-keyframes spin {100% { -moz-transform: rotate(359deg); }}@keyframes spin {100% {  transform: rotate(359deg); }}]]></content>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title></title>
-      <link href="/css/progress_bar.css"/>
-      <url>/css/progress_bar.css</url>
-      
-        <content type="html"><![CDATA[.pace {    -webkit-pointer-events: none;    pointer-events: none;    -webkit-user-select: none;    -moz-user-select: none;    user-select: none;    z-index: 2000;    position: fixed;    margin: auto;    top: 10px;    left: 0;    right: 0;    height: 8px;    border-radius: 8px;    width: 4rem;    background: #eaecf2;    border: 1px #e3e8f7;    overflow: hidden;}.pace-inactive .pace-progress {    opacity: 0;    transition: 0.3s ease-in;}.pace .pace-progress {    -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    -ms-box-sizing: border-box;    -o-box-sizing: border-box;    box-sizing: border-box;    -webkit-transform: translate3d(0, 0, 0);    -moz-transform: translate3d(0, 0, 0);    -ms-transform: translate3d(0, 0, 0);    -o-transform: translate3d(0, 0, 0);    transform: translate3d(0, 0, 0);    max-width: 200px;    position: absolute;    z-index: 2000;    display: block;    top: 0;    right: 100%;    height: 100%;    width: 100%;    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);    animation: gradient 1.5s ease infinite;    background-size: 200%;}.pace.pace-inactive {    opacity: 0;    transition: 0.3s;    top: -8px;}@keyframes gradient {    0% {        background-position: 0% 50%;    }    50% {        background-position: 100% 50%;    }    100% {        background-position: 0% 50%;    }}]]></content>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>关于</title>
-      <link href="/about/index.html"/>
-      <url>/about/index.html</url>
-      
-        <content type="html"><![CDATA[<!-- GitCalender容器 --><div id="gitZone"></div>]]></content>
       
     </entry>
     
@@ -418,10 +415,10 @@
     
     <entry>
       <title></title>
-      <link href="/js/cursor.js"/>
-      <url>/js/cursor.js</url>
+      <link href="/css/progress_bar.css"/>
+      <url>/css/progress_bar.css</url>
       
-        <content type="html"><![CDATA[var CURSOR;Math.lerp = (a, b, n) => (1 - n) * a + n * b;const getStyle = (el, attr) => {    try {        return window.getComputedStyle            ? window.getComputedStyle(el)[attr]            : el.currentStyle[attr];    } catch (e) {    }    return "";};class Cursor {    constructor() {        this.pos = {curr: null, prev: null};        this.pt = [];        this.create();        this.init();        this.render();    }    move(left, top) {        this.cursor.style["left"] = `${left}px`;        this.cursor.style["top"] = `${top}px`;    }    create() {        if (!this.cursor) {            this.cursor = document.createElement("div");            this.cursor.id = "cursor";            this.cursor.classList.add("hidden");            document.body.append(this.cursor);        }        var el = document.getElementsByTagName('*');        for (let i = 0; i < el.length; i++)            if (getStyle(el[i], "cursor") == "pointer")                this.pt.push(el[i].outerHTML);        document.body.appendChild((this.scr = document.createElement("style")));        // 这里改变鼠标指针的颜色 由svg生成        this.scr.innerHTML = `* {cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' width='10px' height='10px'><circle cx='4' cy='4' r='4' opacity='1.0' fill='rgb(57, 197, 187)'/></svg>") 4 4, auto}`;    }    refresh() {        this.scr.remove();        this.cursor.classList.remove("hover");        this.cursor.classList.remove("active");        this.pos = {curr: null, prev: null};        this.pt = [];        this.create();        this.init();        this.render();    }    init() {        document.onmouseover = e => this.pt.includes(e.target.outerHTML) && this.cursor.classList.add("hover");        document.onmouseout = e => this.pt.includes(e.target.outerHTML) && this.cursor.classList.remove("hover");        document.onmousemove = e => {            (this.pos.curr == null) && this.move(e.clientX - 8, e.clientY - 8);            this.pos.curr = {x: e.clientX - 8, y: e.clientY - 8};            this.cursor.classList.remove("hidden");        };        document.onmouseenter = e => this.cursor.classList.remove("hidden");        document.onmouseleave = e => this.cursor.classList.add("hidden");        document.onmousedown = e => this.cursor.classList.add("active");        document.onmouseup = e => this.cursor.classList.remove("active");    }    render() {        if (this.pos.prev) {            this.pos.prev.x = Math.lerp(this.pos.prev.x, this.pos.curr.x, 0.15);            this.pos.prev.y = Math.lerp(this.pos.prev.y, this.pos.curr.y, 0.15);            this.move(this.pos.prev.x, this.pos.prev.y);        } else {            this.pos.prev = this.pos.curr;        }        requestAnimationFrame(() => this.render());    }}(() => {    CURSOR = new Cursor();    // 需要重新获取列表时，使用 CURSOR.refresh()})();]]></content>
+        <content type="html"><![CDATA[.pace {    -webkit-pointer-events: none;    pointer-events: none;    -webkit-user-select: none;    -moz-user-select: none;    user-select: none;    z-index: 2000;    position: fixed;    margin: auto;    top: 10px;    left: 0;    right: 0;    height: 8px;    border-radius: 8px;    width: 4rem;    background: #eaecf2;    border: 1px #e3e8f7;    overflow: hidden;}.pace-inactive .pace-progress {    opacity: 0;    transition: 0.3s ease-in;}.pace .pace-progress {    -webkit-box-sizing: border-box;    -moz-box-sizing: border-box;    -ms-box-sizing: border-box;    -o-box-sizing: border-box;    box-sizing: border-box;    -webkit-transform: translate3d(0, 0, 0);    -moz-transform: translate3d(0, 0, 0);    -ms-transform: translate3d(0, 0, 0);    -o-transform: translate3d(0, 0, 0);    transform: translate3d(0, 0, 0);    max-width: 200px;    position: absolute;    z-index: 2000;    display: block;    top: 0;    right: 100%;    height: 100%;    width: 100%;    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);    animation: gradient 1.5s ease infinite;    background-size: 200%;}.pace.pace-inactive {    opacity: 0;    transition: 0.3s;    top: -8px;}@keyframes gradient {    0% {        background-position: 0% 50%;    }    50% {        background-position: 100% 50%;    }    100% {        background-position: 0% 50%;    }}]]></content>
       
     </entry>
     
@@ -429,10 +426,10 @@
     
     <entry>
       <title></title>
-      <link href="/js/runtime.js"/>
-      <url>/js/runtime.js</url>
+      <link href="/js/cursor.js"/>
+      <url>/js/cursor.js</url>
       
-        <content type="html"><![CDATA[var now = new Date();function createtime() {    // 当前时间    now.setTime(now.getTime() + 1000);    var start = new Date("03/28/2024 00:00:00"); // 旅行者1号开始计算的时间    var dis = Math.trunc(23400000000 + ((now - start) / 1000) * 17); // 距离=秒数*速度 记住转换毫秒    var unit = (dis / 149600000).toFixed(6);  // 天文单位    var grt = new Date("03/28/2024 00:00:00");// 网站诞生时间    var days = (now - grt) / 1e3 / 60 / 60 / 24,        dnum = Math.floor(days),        hours = (now - grt) / 1e3 / 60 / 60 - 24 * dnum,        hnum = Math.floor(hours);    1 == String(hnum).length && (hnum = "0" + hnum);    var minutes = (now - grt) / 1e3 / 60 - 1440 * dnum - 60 * hnum,        mnum = Math.floor(minutes);    1 == String(mnum).length && (mnum = "0" + mnum);    var seconds = (now - grt) / 1e3 - 86400 * dnum - 3600 * hnum - 60 * mnum,        snum = Math.round(seconds);    1 == String(snum).length && (snum = "0" + snum);    let currentTimeHtml = "";    (currentTimeHtml =        hnum < 18 && hnum >= 9            ? `<img class='boardsign' src='https://sourcebucket.s3.ladydaily.com/badge/Brett-科研摸鱼中.svg' title='什么时候能够实现财富自由呀~'><br> <div style="font-size:13px;font-weight:bold">本站居然运行了 ${dnum} 天 ${hnum} 小时 ${mnum} 分 ${snum} 秒 <i id="heartbeat" class='fas fa-heartbeat'></i> <br> 旅行者 1 号当前距离地球 ${dis} 千米，约为 ${unit} 个天文单位 🚀</div>`            : `<img class='boardsign' src='https://sourcebucket.s3.ladydaily.com/badge/Brett-下班休息啦.svg' title='下班了就该开开心心地玩耍~'><br> <div style="font-size:13px;font-weight:bold">本站居然运行了 ${dnum} 天 ${hnum} 小时 ${mnum} 分 ${snum} 秒 <i id="heartbeat" class='fas fa-heartbeat'></i> <br> 旅行者 1 号当前距离地球 ${dis} 千米，约为 ${unit} 个天文单位 🚀</div>`),    document.getElementById("workboard") &&    (document.getElementById("workboard").innerHTML = currentTimeHtml);}// 设置重复执行函数，周期1000mssetInterval(() => {    createtime();}, 1000);]]></content>
+        <content type="html"><![CDATA[var CURSOR;Math.lerp = (a, b, n) => (1 - n) * a + n * b;const getStyle = (el, attr) => {    try {        return window.getComputedStyle            ? window.getComputedStyle(el)[attr]            : el.currentStyle[attr];    } catch (e) {    }    return "";};class Cursor {    constructor() {        this.pos = {curr: null, prev: null};        this.pt = [];        this.create();        this.init();        this.render();    }    move(left, top) {        this.cursor.style["left"] = `${left}px`;        this.cursor.style["top"] = `${top}px`;    }    create() {        if (!this.cursor) {            this.cursor = document.createElement("div");            this.cursor.id = "cursor";            this.cursor.classList.add("hidden");            document.body.append(this.cursor);        }        var el = document.getElementsByTagName('*');        for (let i = 0; i < el.length; i++)            if (getStyle(el[i], "cursor") == "pointer")                this.pt.push(el[i].outerHTML);        document.body.appendChild((this.scr = document.createElement("style")));        // 这里改变鼠标指针的颜色 由svg生成        this.scr.innerHTML = `* {cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' width='10px' height='10px'><circle cx='4' cy='4' r='4' opacity='1.0' fill='rgb(57, 197, 187)'/></svg>") 4 4, auto}`;    }    refresh() {        this.scr.remove();        this.cursor.classList.remove("hover");        this.cursor.classList.remove("active");        this.pos = {curr: null, prev: null};        this.pt = [];        this.create();        this.init();        this.render();    }    init() {        document.onmouseover = e => this.pt.includes(e.target.outerHTML) && this.cursor.classList.add("hover");        document.onmouseout = e => this.pt.includes(e.target.outerHTML) && this.cursor.classList.remove("hover");        document.onmousemove = e => {            (this.pos.curr == null) && this.move(e.clientX - 8, e.clientY - 8);            this.pos.curr = {x: e.clientX - 8, y: e.clientY - 8};            this.cursor.classList.remove("hidden");        };        document.onmouseenter = e => this.cursor.classList.remove("hidden");        document.onmouseleave = e => this.cursor.classList.add("hidden");        document.onmousedown = e => this.cursor.classList.add("active");        document.onmouseup = e => this.cursor.classList.remove("active");    }    render() {        if (this.pos.prev) {            this.pos.prev.x = Math.lerp(this.pos.prev.x, this.pos.curr.x, 0.15);            this.pos.prev.y = Math.lerp(this.pos.prev.y, this.pos.curr.y, 0.15);            this.move(this.pos.prev.x, this.pos.prev.y);        } else {            this.pos.prev = this.pos.curr;        }        requestAnimationFrame(() => this.render());    }}(() => {    CURSOR = new Cursor();    // 需要重新获取列表时，使用 CURSOR.refresh()})();]]></content>
       
     </entry>
     
@@ -451,21 +448,10 @@
     
     <entry>
       <title></title>
-      <link href="/js/shake.js"/>
-      <url>/js/shake.js</url>
+      <link href="/js/runtime.js"/>
+      <url>/js/runtime.js</url>
       
-        <content type="html"><![CDATA[// 防抖全局计时器let TT = null;    //time用来控制事件的触发// 防抖函数:fn->逻辑 time->防抖时间function debounce(fn, time) {    if (TT !== null) clearTimeout(TT);    TT = setTimeout(fn, time);}]]></content>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>link</title>
-      <link href="/link/index.html"/>
-      <url>/link/index.html</url>
-      
-        <content type="html"><![CDATA[]]></content>
+        <content type="html"><![CDATA[var now = new Date();function createtime() {    // 当前时间    now.setTime(now.getTime() + 1000);    var start = new Date("03/28/2024 00:00:00"); // 旅行者1号开始计算的时间    var dis = Math.trunc(23400000000 + ((now - start) / 1000) * 17); // 距离=秒数*速度 记住转换毫秒    var unit = (dis / 149600000).toFixed(6);  // 天文单位    var grt = new Date("03/28/2024 00:00:00");// 网站诞生时间    var days = (now - grt) / 1e3 / 60 / 60 / 24,        dnum = Math.floor(days),        hours = (now - grt) / 1e3 / 60 / 60 - 24 * dnum,        hnum = Math.floor(hours);    1 == String(hnum).length && (hnum = "0" + hnum);    var minutes = (now - grt) / 1e3 / 60 - 1440 * dnum - 60 * hnum,        mnum = Math.floor(minutes);    1 == String(mnum).length && (mnum = "0" + mnum);    var seconds = (now - grt) / 1e3 - 86400 * dnum - 3600 * hnum - 60 * mnum,        snum = Math.round(seconds);    1 == String(snum).length && (snum = "0" + snum);    let currentTimeHtml = "";    (currentTimeHtml =        hnum < 18 && hnum >= 9            ? `<img class='boardsign' src='https://sourcebucket.s3.ladydaily.com/badge/Brett-科研摸鱼中.svg' title='什么时候能够实现财富自由呀~'><br> <div style="font-size:13px;font-weight:bold">本站居然运行了 ${dnum} 天 ${hnum} 小时 ${mnum} 分 ${snum} 秒 <i id="heartbeat" class='fas fa-heartbeat'></i> <br> 旅行者 1 号当前距离地球 ${dis} 千米，约为 ${unit} 个天文单位 🚀</div>`            : `<img class='boardsign' src='https://sourcebucket.s3.ladydaily.com/badge/Brett-下班休息啦.svg' title='下班了就该开开心心地玩耍~'><br> <div style="font-size:13px;font-weight:bold">本站居然运行了 ${dnum} 天 ${hnum} 小时 ${mnum} 分 ${snum} 秒 <i id="heartbeat" class='fas fa-heartbeat'></i> <br> 旅行者 1 号当前距离地球 ${dis} 千米，约为 ${unit} 个天文单位 🚀</div>`),    document.getElementById("workboard") &&    (document.getElementById("workboard").innerHTML = currentTimeHtml);}// 设置重复执行函数，周期1000mssetInterval(() => {    createtime();}, 1000);]]></content>
       
     </entry>
     
@@ -483,11 +469,33 @@
     
     
     <entry>
+      <title>link</title>
+      <link href="/link/index.html"/>
+      <url>/link/index.html</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title></title>
       <link href="/js/universe.js"/>
       <url>/js/universe.js</url>
       
         <content type="html"><![CDATA[function dark() {    window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;    var n, e, i, h, t = .05, s = document.getElementById("universe"), o = !0, a = "180,184,240", r = "226,225,142",        d = "226,225,224", c = [];    function f() {        n = window.innerWidth, e = window.innerHeight, i = .216 * n, s.setAttribute("width", n), s.setAttribute("height", e)    }    function u() {        h.clearRect(0, 0, n, e);        for (var t = c.length, i = 0; i < t; i++) {            var s = c[i];            s.move(), s.fadeIn(), s.fadeOut(), s.draw()        }    }    function y() {        this.reset = function () {            this.giant = m(3), this.comet = !this.giant && !o && m(10), this.x = l(0, n - 10), this.y = l(0, e), this.r = l(1.1, 2.6), this.dx = l(t, 6 * t) + (this.comet + 1 - 1) * t * l(50, 120) + 2 * t, this.dy = -l(t, 6 * t) - (this.comet + 1 - 1) * t * l(50, 120), this.fadingOut = null, this.fadingIn = !0, this.opacity = 0, this.opacityTresh = l(.2, 1 - .4 * (this.comet + 1 - 1)), this.do = l(5e-4, .002) + .001 * (this.comet + 1 - 1)        }, this.fadeIn = function () {            this.fadingIn && (this.fadingIn = !(this.opacity > this.opacityTresh), this.opacity += this.do)        }, this.fadeOut = function () {            this.fadingOut && (this.fadingOut = !(this.opacity < 0), this.opacity -= this.do / 2, (this.x > n || this.y < 0) && (this.fadingOut = !1, this.reset()))        }, this.draw = function () {            if (h.beginPath(), this.giant) h.fillStyle = "rgba(" + a + "," + this.opacity + ")", h.arc(this.x, this.y, 2, 0, 2 * Math.PI, !1); else if (this.comet) {                h.fillStyle = "rgba(" + d + "," + this.opacity + ")", h.arc(this.x, this.y, 1.5, 0, 2 * Math.PI, !1);                for (var t = 0; t < 30; t++) h.fillStyle = "rgba(" + d + "," + (this.opacity - this.opacity / 20 * t) + ")", h.rect(this.x - this.dx / 4 * t, this.y - this.dy / 4 * t - 2, 2, 2), h.fill()            } else h.fillStyle = "rgba(" + r + "," + this.opacity + ")", h.rect(this.x, this.y, this.r, this.r);            h.closePath(), h.fill()        }, this.move = function () {            this.x += this.dx, this.y += this.dy, !1 === this.fadingOut && this.reset(), (this.x > n - n / 4 || this.y < 0) && (this.fadingOut = !0)        }, setTimeout(function () {            o = !1        }, 50)    }    function m(t) {        return Math.floor(1e3 * Math.random()) + 1 < 10 * t    }    function l(t, i) {        return Math.random() * (i - t) + t    }    f(), window.addEventListener("resize", f, !1), function () {        h = s.getContext("2d");        for (var t = 0; t < i; t++) c[t] = new y, c[t].reset();        u()    }(), function t() {        document.getElementsByTagName('html')[0].getAttribute('data-theme') == 'dark' && u(), window.requestAnimationFrame(t)    }()};dark()]]></content>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title></title>
+      <link href="/js/shake.js"/>
+      <url>/js/shake.js</url>
+      
+        <content type="html"><![CDATA[// 防抖全局计时器let TT = null;    //time用来控制事件的触发// 防抖函数:fn->逻辑 time->防抖时间function debounce(fn, time) {    if (TT !== null) clearTimeout(TT);    TT = setTimeout(fn, time);}]]></content>
       
     </entry>
     
